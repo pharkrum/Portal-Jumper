@@ -1,0 +1,98 @@
+package com.redes.game.socket;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.Inet4Address;
+import java.net.Socket;
+
+import com.redes.game.Game;
+import com.redes.game.Handler;
+import com.redes.game.entity.mob.Player;
+
+public class Network extends Thread {
+	public Socket client;
+	public int port;
+	
+	public Handler handler;
+	public Player player1, player2;
+	
+	public DataInputStream input;
+	public DataOutputStream output;
+	
+	public boolean closing = false;
+
+	public Network(int port, Handler handler){
+		this.port = port;
+		this.handler = handler;
+	}	
+
+	//CLIENT
+	public void run(){	
+		
+		try{
+			client = new Socket(Inet4Address.getLocalHost().getHostAddress(),port);	
+					
+				while(true){
+					
+				if (client != null){
+					
+					input = new DataInputStream(client.getInputStream());
+					output = new DataOutputStream(client.getOutputStream());
+
+					if (Game.playing && !Game.showDeathScreen){
+						
+			        	player1 = (Player)handler.getEntity(0);
+			    		player2 = (Player)handler.getEntity(1);
+			    		
+			    		String player2Info;
+			    	
+			        	//output
+			        	player2Info = player2.getVelX()+"#"+player2.jumping+"#"+player2.gravity+"#"+Game.LocalPoints;
+			        	String msg = input.readUTF();
+			        	
+			        	
+			        	
+			        	
+
+			        	String[] parts = msg.split("#");
+			        	int velX = Integer.parseInt(parts[0]);
+			        	boolean jumping = Boolean.parseBoolean(parts[1]);
+			        	double gravity = Double.parseDouble(parts[2]);
+			        	Game.EnemyPoints = Integer.parseInt(parts[3]);
+			        	
+				        if(velX < -1){
+				        	player1.facing = 0;
+				        }else if(velX > 1){
+				        	player1.facing = 1;
+				        }
+				        
+				    	player1.setVelX(velX);
+				    	if (gravity == 10.0){
+				    		player1.gravity = gravity;
+					    	player1.jumping = jumping;
+				    	}
+				    	
+				    	if(Game.LocalPoints == Game.maxPoints){
+				        	Game.localWin = true;
+				        	Game.gameOver = true;
+						}
+						else if(Game.EnemyPoints == Game.maxPoints){
+							Game.enemyWin = true;
+							Game.gameOver = true;
+						}
+				    	output.writeUTF(player2Info);
+			        	if(closing==true){
+				        	break;
+				        }
+			        }
+				}  				
+			}  
+			output.close();
+			client.close();
+			System.out.println("Conexão encerrada");
+		}
+			catch(Exception e){
+				System.out.println("Error: " + e.getMessage());
+			}
+	}
+}

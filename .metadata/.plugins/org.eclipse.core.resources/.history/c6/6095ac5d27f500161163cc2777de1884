@@ -1,0 +1,5 @@
+package com.redes.game.entity.mob;
+
+public enum Status {
+	dead, live, lose, win, powerup;
+}

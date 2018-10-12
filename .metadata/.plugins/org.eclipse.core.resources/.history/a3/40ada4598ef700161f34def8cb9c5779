@@ -1,0 +1,252 @@
+package com.redes.game;
+
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+
+import com.redes.game.gfx.Sprite;
+import com.redes.game.gfx.SpriteSheet;
+import com.redes.game.gfx.gui.Launcher;
+import com.redes.game.input.KeyInput;
+import com.redes.game.input.MouseInput;
+
+public class Game extends Canvas implements Runnable{
+	
+	private static final long serialVersionUID = 12345;
+	//http://stackoverflow.com/questions/5632065/what-does-the-declare-a-static-final-serialversionuid-warning-mean-and-how-to
+	
+	public static final int	WIDTH		=	170;
+	public static final int	HEIGHT 		=	WIDTH/12*10;
+	public static final int SCALE		=	4;
+	public static final String TITLE	=	"EP+ Client";
+	
+	private Thread thread;
+	private boolean running = false;
+	public static BufferedImage level; 
+	
+	public static boolean playing = false;
+	
+	public static Handler handler;
+	public static Camera cam;
+	public static Launcher launcher;
+	public static MouseInput mouse;
+	public static KeyInput key;
+	
+	public static int deathScreenTime = 0;
+	public static boolean showDeathScreen = false;
+	public static boolean gameOver = false;
+	public static int LocalPoints = 0;
+	public static int EnemyPoints = 0;
+	public static int maxPoints = 3;
+	
+	public static boolean localWin = false;
+	public static boolean enemyWin = false;
+	
+	public static SpriteSheet sheet;
+	public static Sprite grass;
+	public static Sprite portal;
+	public static Sprite portal_red;
+	public static Sprite player[] = new Sprite[16];
+	public static Sprite goomba[] = new Sprite[16];
+	public static Sprite mushroom;
+	
+	
+	public Game(){
+		Dimension size = new Dimension(WIDTH*SCALE,HEIGHT*SCALE);
+		setPreferredSize(size);
+		setMaximumSize(size);
+		setMinimumSize(size);
+	}
+	
+	public void init(){
+		handler = new Handler(); 
+		sheet = new SpriteSheet("/spritesheet.png");
+		
+		cam = new Camera();
+		
+		mouse = new MouseInput();
+		
+		key = new KeyInput();
+		
+		addKeyListener(key);
+		addMouseListener(mouse);
+		addMouseMotionListener(mouse);
+
+		
+		grass = new Sprite(sheet,1,1);
+		mushroom = new Sprite(sheet,2,1);
+		portal = new Sprite(sheet,3,1);
+		portal_red = new Sprite(sheet,4,1);
+		
+		for(int i=0;i<player.length;i++){
+			player[i] = new Sprite(sheet,i+1,16);
+		}
+		
+		for(int i=0;i<goomba.length;i++){
+			goomba[i] = new Sprite(sheet,i+1,15);
+		}
+		
+		try {
+			level = ImageIO.read(getClass().getResourceAsStream("/level.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		launcher = new Launcher(handler);
+		
+	}
+	private synchronized void start(){
+		if(running) return;
+		running = true;
+		thread = new Thread(this,"Thread1");
+		thread.start();
+	}
+	
+	private synchronized void stop(){
+		if(running) return;
+		running = false;
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} 
+	}
+	
+	public void run() {
+		init();
+		requestFocus();
+		long lastTime = System.nanoTime();
+		long timer = System.currentTimeMillis();
+		double delta = 0.0;
+		double ns = 1000000000.0/60.0;
+		int frames = 0;
+		int ticks = 0;
+		
+		while(running){
+			long now = System.nanoTime();
+			delta += (now-lastTime)/ns;
+			lastTime = now;
+			while(delta >= 1){
+				tick();
+				ticks++;
+				delta--;
+				render();
+				
+			}
+			//render();
+			//frames++;
+			if(System.currentTimeMillis()-timer > 1000){
+				timer += 1000;
+				//System.out.println(frames + " frames per second " + ticks + " updates per seconds");
+				frames = 0;
+				ticks = 0;
+			}
+		}
+		stop();
+	}
+	
+	public void render(){
+		BufferStrategy bs = getBufferStrategy();
+		if (bs == null){
+			createBufferStrategy(3);
+			return;
+		}
+		Graphics g = bs.getDrawGraphics();
+		
+		g.setColor(Color.black);
+		g.fillRect(0, 0, getWidth(), getHeight());
+		
+		g.drawImage(portal.getBufferedImage(), 30, 20, 40, 40, null);
+		
+		g.setColor(Color.white);
+		g.setFont(new Font("Courier",Font.BOLD,30));
+		g.drawString("x"+LocalPoints, 70, 60);
+		
+		g.drawImage(portal_red.getBufferedImage(), getFrameWidth()-90, 20, 40, 40, null);
+		
+		g.setColor(Color.white);
+		g.setFont(new Font("Courier",Font.BOLD,30));
+		g.drawString("x"+EnemyPoints, getFrameWidth()-50, 60);
+			
+		if(gameOver){
+			if(!showDeathScreen){
+				playing = false;
+				handler.clearLevel();
+				gameOver = false;
+				LocalPoints =0;
+				EnemyPoints =0;
+			}else{
+				if(localWin){
+					g.setColor(Color.WHITE);
+					g.setFont(new Font("Courier",Font.BOLD,50));
+					g.drawString("You Win!!", 200, 200);
+				}else if(enemyWin){
+					g.setColor(Color.WHITE);
+					g.setFont(new Font("Courier",Font.BOLD,50));
+					g.drawString("You Lose!!", 200, 200);
+				}
+			}
+		}
+		
+		if(playing) 
+			g.translate(cam.getX(), cam.getY());
+		else
+			launcher.render(g);
+		
+		if(!gameOver)
+			if(playing)
+				handler.render(g);
+
+		g.dispose();
+		bs.show();
+	}
+	
+	public void tick(){
+		if(playing)handler.tick();
+
+		for(int i=0; i<handler.entitys.size();i++){
+			if(handler.entitys.get(i).getId()==Id.player2){
+				cam.tick(handler.entitys.get(i));
+			}
+		}
+		
+		if(showDeathScreen) deathScreenTime++;
+		if(deathScreenTime>=180){
+			deathScreenTime = 0;
+			handler.clearLevel();
+			handler.createLevel(level);
+			showDeathScreen = false;
+		}
+	} 
+	
+	public static int getFrameWidth(){
+		return WIDTH*SCALE;
+	}
+	
+	public static int getFrameHeight(){
+		return HEIGHT*SCALE;
+	}
+	
+	public static void main(String[] args){
+		Game game = new Game();
+		JFrame frame = new JFrame(TITLE);
+		frame.add(game);
+		frame.pack();
+		frame.setResizable(false);
+		frame.setLocationRelativeTo(null);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+		game.start();
+	}
+
+	
+
+}

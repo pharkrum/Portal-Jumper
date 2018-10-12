@@ -1,0 +1,98 @@
+package com.redes.game.socket;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import com.redes.game.Game;
+import com.redes.game.Handler;
+import com.redes.game.entity.mob.Player;
+import com.redes.game.entity.mob.Status;
+
+public class Network extends Thread{
+	public ServerSocket server;
+	public int port;
+	
+	public Handler handler;
+	public Player player1, player2;
+	
+	public DataInputStream input;
+	public DataOutputStream output;
+	
+	public Socket client;
+	public boolean closing = false;
+
+	public Network(int port, Handler handler){
+		this.port = port;
+		this.handler = handler;
+	}
+	// SERVER
+	public void run(){
+		
+		try {
+			server = new ServerSocket(port); //open server
+			System.out.println("Server listening on the port: "+port);
+			
+			try{
+				client = server.accept(); //waiting client
+			}catch(java.net.SocketException exp){
+				System.out.println("Connection down");
+			}
+			
+			System.out.println("Client connected: "+ client.getInetAddress().getHostAddress()); //client connected
+
+			while(true){
+				
+				if(client != null){
+					
+					input = new DataInputStream(client.getInputStream());
+					output = new DataOutputStream(client.getOutputStream());  
+				        	
+		        	if(Game.playing && !Game.showDeathScreen){
+		        		
+		        		player1 = (Player)handler.getEntity(0);
+						player2 = (Player)handler.getEntity(1);
+						
+						String player1Info;
+						
+			        	String msg = input.readUTF();
+
+			        	String[] parts = msg.split("#");
+			        	int velX = Integer.parseInt(parts[0]);
+			        	boolean jumping = Boolean.parseBoolean(parts[1]);
+			        	double gravity = Double.parseDouble(parts[2]);
+			        	Game.EnemyPoints = Integer.parseInt(parts[4]);
+			        	
+				        if(velX < -1){
+				        	player2.facing = 0;
+				        }else if(velX > 1){
+				        	player2.facing = 1;
+				        }
+				        
+				    	player2.setVelX(velX);
+				    	if (gravity == 10.0){
+				    		player2.gravity = gravity;
+					    	player2.jumping = jumping;
+				    	}
+				    	
+				        //output
+				    	player1Info = player1.getVelX()+ "#" + player1.jumping + "#" + player1.gravity+"#"+Game.LocalPoints;
+				        output.writeUTF(player1Info);
+				    	
+				    	if(closing==true){
+				        	break;
+				        }	
+		        	}
+				} 
+			}
+			client.close();
+			input.close();
+			output.close();
+			server.close(); 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}

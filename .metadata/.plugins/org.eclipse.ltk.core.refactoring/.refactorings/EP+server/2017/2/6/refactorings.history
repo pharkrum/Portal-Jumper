@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move element &apos;Player.java&apos; to &apos;EP+/src/com.redes.game.entity.mob&apos;&#x0D;&#x0A;- Original project: &apos;EP+&apos;&#x0D;&#x0A;- Destination element: &apos;EP+/src/com.redes.game.entity.mob&apos;&#x0D;&#x0A;- Original element: &apos;com.redes.game.entity.Player.java&apos;&#x0D;&#x0A;- Update references to refactored element" description="Move compilation unit" destination="/src&lt;com.redes.game.entity.mob" element1="/src&lt;com.redes.game.entity{Player.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.move" patterns="*" policy="org.eclipse.jdt.ui.moveResources" qualified="false" references="true" stamp="1486330577581" units="1" version="1.0"/>
+</session>

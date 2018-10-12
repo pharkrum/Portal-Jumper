@@ -1,0 +1,125 @@
+package com.redes.game.socket;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Socket;
+
+import com.redes.game.Game;
+import com.redes.game.Handler;
+import com.redes.game.Id;
+import com.redes.game.entity.mob.Player;
+import com.redes.game.entity.mob.Status;
+
+public class Network extends Thread {
+	public Socket client;
+	public int port;
+	
+	public Handler handler;
+	public Player player1, player2;
+	
+	public String msg;
+	
+	public DataInputStream input;
+	public DataOutputStream output;
+	
+	public boolean serverStartPlaying = false;
+	
+	public boolean closing = false;
+
+	public Network(int port, Handler handler){
+		this.port = port;
+		this.handler = handler;
+	}	
+
+	//CLIENT
+	public void run(){	
+		
+		try{
+			client = new Socket("127.0.0.1",port);	
+			
+			if (client != null){
+				
+				Game.firstConect = true;
+				
+				input = new DataInputStream(client.getInputStream());
+				output = new DataOutputStream(client.getOutputStream());
+				System.out.println("Streams created");
+				
+				while(!closing){
+					
+					if(!serverStartPlaying){
+						output.writeUTF("0#0#0#false#0.0#"+Game.LocalPoints);
+						input.readUTF();
+					}
+					
+					if(Game.playing && !Game.showDeathScreen){
+						
+						for(int i=0;i<handler.entitys.size();i++){
+							if(handler.entitys.get(i).id == Id.player1)
+								player1 = (Player)handler.getEntity(i);
+							else if(handler.entitys.get(i).id == Id.player2)
+								player2 = (Player)handler.getEntity(i);						
+						}
+			    		
+			    		String player2Info;
+			    		
+			    		if(Game.EnemyPoints == 3){
+				    		Game.showDeathScreen = true;
+				    		Game.enemyWin = true;
+				    		Game.gameOver = true;
+				    	}
+				    		
+				    	else if (Game.LocalPoints == 3){
+				    		player2Info = player2.getX()+"#"+player2.getY()+"#"+player2.getVelX()+"#"+player2.jumping+"#"+player2.gravity+"#"+Game.LocalPoints;
+				        	output.writeUTF(player2Info);
+				        	serverStartPlaying = false;
+				    		output.writeUTF("0#0#0#false#0.0#0");
+				    		Game.showDeathScreen = true;
+				    		Game.localWin = true;
+				    		Game.gameOver = true;
+
+				    	}
+				    	else{
+				    		player2Info = player2.getX()+"#"+player2.getY()+"#"+player2.getVelX()+"#"+player2.jumping+"#"+player2.gravity+"#"+Game.LocalPoints;
+				        	output.writeUTF(player2Info);
+				    	}
+			        	
+			        	msg = input.readUTF();
+						serverStartPlaying = true;
+			        	
+			        	String[] parts = msg.split("#");
+			        	int x = Integer.parseInt(parts[0]);
+			        	int y = Integer.parseInt(parts[1]);
+			        	int velX = Integer.parseInt(parts[2]);
+			        	boolean jumping = Boolean.parseBoolean(parts[3]);
+			        	double gravity = Double.parseDouble(parts[4]);
+			        	Game.EnemyPoints = Integer.parseInt(parts[5]);
+			        	
+				        if(velX < -1){
+				        	player1.facing = 0;
+				        }else if(velX > 1){
+				        	player1.facing = 1;
+				        }
+				        
+				        player1.setX(x);
+				        player1.setY(y);
+				    	player1.setVelX(velX);
+				    	if (gravity == 10.0){
+				    		player1.gravity = gravity;
+					    	player1.jumping = jumping;
+				    	}
+				    	
+			        }
+				}
+				
+				System.out.println("Conexão encerrada");
+			}
+		}
+		catch(Exception e){
+			System.out.println("Error: " + e.getMessage());
+			Game.launcher.buttons[2].setLabel("Connect to server");
+		}
+	}
+}

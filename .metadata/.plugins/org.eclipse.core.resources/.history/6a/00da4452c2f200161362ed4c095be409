@@ -1,0 +1,52 @@
+package com.redes.game.socket;
+
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Date;
+
+public class Network extends Thread{
+	ServerSocket server;
+	Thread thread2;
+	
+	public Network(int port){
+		thread2 = new Thread(this,"Socket Thread");
+		try {
+			server = new ServerSocket(port);
+			System.out.println("Server listening on the port: "+port);
+			while(true){
+				Socket client = server.accept();
+				System.out.println("Client connected: "+ client.getInetAddress().getHostAddress());
+				 ObjectOutputStream output = new ObjectOutputStream(client.getOutputStream());
+				 output.flush();
+				 output.writeObject(new Date());
+				 output.close();
+				 client.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void run(){
+		
+	}
+	
+	private synchronized void start(){
+		if(running) return;
+		running = true;
+		thread = new Thread(this,"Thread1");
+		thread.start();
+	}
+	
+	private synchronized void stop(){
+		if(running) return;
+		running = false;
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} 
+	}
+}

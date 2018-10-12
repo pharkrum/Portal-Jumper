@@ -1,0 +1,5 @@
+package com.redes.game;
+
+public enum State {
+	dead, live, lose, win, powerup;
+}

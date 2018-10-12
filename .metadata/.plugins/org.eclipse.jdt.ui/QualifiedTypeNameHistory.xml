@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="com.redes.game.entity.Player"/>
+<fullyQualifiedTypeName name="com.redes.game.input.KeyInput"/>
+<fullyQualifiedTypeName name="com.redes.game.ID"/>
+<fullyQualifiedTypeName name="com.redes.game.tile.Wall"/>
+<fullyQualifiedTypeName name="java.awt.Rectangle"/>
+<fullyQualifiedTypeName name="javax.imageio.ImageIO"/>
+<fullyQualifiedTypeName name="com.redes.game.Id"/>
+<fullyQualifiedTypeName name="java.util.Iterator"/>
+<fullyQualifiedTypeName name="java.io.OutputStream"/>
+<fullyQualifiedTypeName name="com.redes.game.entity.Entity"/>
+<fullyQualifiedTypeName name="java.io.DataInputStream"/>
+<fullyQualifiedTypeName name="java.io.DataOutputStream"/>
+<fullyQualifiedTypeName name="java.awt.event.KeyEvent"/>
+<fullyQualifiedTypeName name="java.net.Inet4Address"/>
+<fullyQualifiedTypeName name="com.redes.game.tile.Door"/>
+<fullyQualifiedTypeName name="com.redes.game.entity.mob.Player"/>
+<fullyQualifiedTypeName name="com.redes.game.entity.mob.State"/>
+<fullyQualifiedTypeName name="java.awt.FontMetrics"/>
+<fullyQualifiedTypeName name="com.redes.game.gfx.gui.Button"/>
+<fullyQualifiedTypeName name="com.redes.game.Handler"/>
+<fullyQualifiedTypeName name="com.redes.game.gfx.gui.Launcher"/>
+<fullyQualifiedTypeName name="java.awt.Color"/>
+<fullyQualifiedTypeName name="java.awt.Font"/>
+<fullyQualifiedTypeName name="java.lang.System"/>
+<fullyQualifiedTypeName name="java.io.InputStream"/>
+<fullyQualifiedTypeName name="com.redes.game.Game"/>
+</qualifiedTypeNameHistroy>

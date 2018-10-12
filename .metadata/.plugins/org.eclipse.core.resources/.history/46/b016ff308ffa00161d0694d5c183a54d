@@ -1,0 +1,87 @@
+package com.redes.game;
+
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.util.LinkedList;
+
+import com.redes.game.entity.Entity;
+import com.redes.game.entity.mob.Goomba;
+import com.redes.game.entity.mob.Player;
+import com.redes.game.tile.Door;
+import com.redes.game.tile.Tile;
+import com.redes.game.tile.Wall;
+
+public class Handler {
+	
+	public LinkedList<Entity> entitys = new LinkedList<Entity>();
+	public LinkedList<Tile> tiles = new LinkedList<Tile>();
+	
+	public Handler(){
+	}
+	
+	public void render(Graphics g){
+		for(int i=0;i<entitys.size();i++) {
+			entitys.get(i).render(g);
+		}
+		
+		for(int i=0;i<tiles.size();i++) {
+			tiles.get(i).render(g);
+		}
+	}
+	
+	public void tick(){
+		for(int i=0;i<entitys.size();i++) {
+			entitys.get(i).tick();
+		}
+		
+		for(int i=0;i<tiles.size();i++) {
+			tiles.get(i).tick();
+		}
+	}
+	
+	public void addEntity(Entity en){
+		entitys.add(en);
+	}
+	
+	public void removeEntity(Entity en){
+		entitys.remove(en);
+	}
+	
+	public void addTile(Tile ti){
+		tiles.add(ti);
+	}
+	
+	public void removeTile(Tile ti){
+		tiles.remove(ti);
+	}
+	
+	public void clearLevel(){
+		entitys.clear();
+		tiles.clear();
+	}
+	
+	public void createLevel(BufferedImage level){
+		int width = level.getWidth();
+		int height = level.getHeight();
+		
+		for(int y=0; y<height;y++){
+			for(int x=0; x<width; x++){
+				int pixel = level.getRGB(x, y);
+				
+				int red = (pixel >> 16) & 0xff;
+				int green = (pixel >> 8) & 0xff;
+				int blue = (pixel) & 0xff;
+				
+				if (red==0 && green==0 && blue==255) addEntity(new Player(0,0,64,64,Id.player1,this));
+				if (red==0 && green==255 && blue==0) addEntity(new Player(x*64,y*64,64,64,Id.player2,this));
+				if (red==0 && green==0 && blue==0) addTile(new Wall(x*64,y*64,64,64,true,Id.wall,this));
+				if (red==255 && green==255 && blue==0) addTile(new Door(x*64,y*64,64,64,true,Id.door,this));
+				if (red==255 && green==102 && blue ==0) addEntity(new Goomba(x*64,y*64,64,64,Id.goomba,this));
+				
+			}
+		}
+	}
+	public Entity getEntity(int i){
+		return entitys.get(i);
+	}
+}
