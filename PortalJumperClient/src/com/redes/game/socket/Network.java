@@ -12,6 +12,7 @@ import com.redes.game.entity.mob.Player;
 public class Network extends Thread {
 	public Socket client;
 	public int port;
+	public String serverIP = "127.0.0.1";
 	public Handler handler;
 	public Player player1, player2;
 	
@@ -33,7 +34,7 @@ public class Network extends Thread {
 	public void run(){	
 		
 		try{
-			client = new Socket("127.0.0.1",port);	
+			client = new Socket(serverIP,port);	
 			
 			if (client != null){
 				
